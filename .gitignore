@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Backend (Maven)
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+HELP.md
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env (no secrets today, but keep the habit)
+.env
+.env.local

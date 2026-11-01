@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "checkJs": false
+  },
+  "exclude": ["node_modules", "dist"]
+}
