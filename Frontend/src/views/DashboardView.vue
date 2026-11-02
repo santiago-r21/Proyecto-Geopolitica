@@ -14,7 +14,6 @@ import PartnerDetail from '../components/PartnerDetail.vue'
 import CardSkeleton from '../components/states/CardSkeleton.vue'
 import ErrorState from '../components/states/ErrorState.vue'
 import { useDashboardStore } from '../stores/dashboard.js'
-import { paisPorCodigo } from '../services/oec/reference.js'
 
 const store = useDashboardStore()
 const {
@@ -52,8 +51,8 @@ const pestanasPendientes = [
   { value: 'sectores', titulo: 'Análisis por sectores', icono: 'pi pi-th-large' },
 ]
 
-const nombrePais = () => datos.value?.nombre ?? paisPorCodigo[codigoPais.value]?.nombre ?? ''
-const isoPais = () => datos.value?.iso ?? paisPorCodigo[codigoPais.value]?.iso ?? null
+const nombrePais = () => datos.value?.nombre ?? store.catalogoPorCodigo[codigoPais.value]?.nombre ?? ''
+const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.value]?.iso2 ?? null
 </script>
 
 <template>

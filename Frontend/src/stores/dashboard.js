@@ -1,18 +1,18 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { obtenerDependencia } from '../services/api/client.js'
-import { paisPorCodigo } from '../services/oec/reference.js'
+import { obtenerDependencia, obtenerCatalogo } from '../services/api/client.js'
 
 const ANIO = String(import.meta.env.VITE_OEC_YEAR ?? '2023')
 
 /**
- * Store del dashboard: qué país y pestaña están seleccionados, más los datos de
- * dependencia por país cacheados en memoria durante la sesión (se pierden al
- * recargar la página, F5 — es intencional). Cambiar `codigoPais` dispara la
- * consulta a nuestro backend automáticamente si ese país no está ya en caché.
+ * Store del dashboard: qué país y pestaña están seleccionados, el catálogo
+ * completo de países (para el buscador) y los datos de dependencia por país
+ * cacheados en memoria durante la sesión (se pierden al recargar la página,
+ * F5 — es intencional). Cambiar `codigoPais` dispara la consulta a nuestro
+ * backend automáticamente si ese país no está ya en caché.
  */
 export const useDashboardStore = defineStore('dashboard', () => {
-  const codigoPais = ref('CO')
+  const codigoPais = ref('sacol') // id de la OEC (ej. 'sacol' = Colombia)
   const pestanaActiva = ref('resumen')
 
   const cache = reactive({}) // { [codigo]: { datos, consultadoEn } }
@@ -24,9 +24,30 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const enVuelo = {}
   const controladores = {}
 
+  // Catálogo completo de países (GET /api/paises), para el buscador. Se carga
+  // una sola vez, no por país: la validación de "país soportado" ya la hace
+  // el backend, así que el store no necesita una lista propia para eso.
+  const catalogo = ref([])
+  const cargandoCatalogo = ref(false)
+  const catalogoError = ref(null)
+  const catalogoPorCodigo = computed(() => Object.fromEntries(catalogo.value.map((p) => [p.codigo, p])))
+
+  async function cargarCatalogo() {
+    if (catalogo.value.length || cargandoCatalogo.value) return
+    cargandoCatalogo.value = true
+    catalogoError.value = null
+    try {
+      catalogo.value = await obtenerCatalogo()
+    } catch (err) {
+      catalogoError.value = err
+    } finally {
+      cargandoCatalogo.value = false
+    }
+  }
+
   /**
    * Resuelve los datos de un país, usando caché si ya existen.
-   * @param {string} codigo
+   * @param {string} codigo - id de la OEC (ej. 'sacol')
    * @param {{ forzar?: boolean }} [opciones] - `forzar: true` ignora la caché y recarga.
    */
   async function obtener(codigo, { forzar = false } = {}) {
@@ -34,12 +55,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (!forzar && enVuelo[codigo]) return enVuelo[codigo]
 
     if (forzar) controladores[codigo]?.abort()
-
-    const pais = paisPorCodigo[codigo]
-    if (!pais) {
-      error[codigo] = new Error(`País no soportado: ${codigo}`)
-      return null
-    }
 
     const controller = new AbortController()
     controladores[codigo] = controller
@@ -50,7 +65,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const promesa = (async () => {
       try {
-        const datos = await obtenerDependencia(pais.oec, ANIO, signal)
+        const datos = await obtenerDependencia(codigo, ANIO, signal)
         if (signal.aborted) return cache[codigo]?.datos ?? null
 
         cache[codigo] = { datos, consultadoEn: Date.now() }
@@ -81,6 +96,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return obtener(codigoPais.value, { forzar: true })
   }
 
+  cargarCatalogo()
+
   // Cambiar de país consulta sus datos automáticamente si no están en caché.
   watch(codigoPais, (codigo) => obtener(codigo), { immediate: true })
 
@@ -100,5 +117,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
     obtener,
     invalidar,
     recargar,
+    catalogo,
+    cargandoCatalogo,
+    catalogoError,
+    catalogoPorCodigo,
+    cargarCatalogo,
   }
 })
