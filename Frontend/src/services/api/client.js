@@ -46,3 +46,27 @@ export async function obtenerDependencia(codigoOec, anio, signal) {
     throw new ApiError('La respuesta del servidor no es válida.', { cause: err })
   }
 }
+
+/** Obtiene el catálogo completo de países disponibles (para el buscador). */
+export async function obtenerCatalogo() {
+  let res
+  try {
+    res = await fetch(`${API_BASE}/api/paises`, { headers: { Accept: 'application/json' } })
+  } catch (err) {
+    throw new ApiError('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', {
+      cause: err,
+    })
+  }
+
+  if (!res.ok) {
+    throw new ApiError(`El servidor respondió con un error (${res.status}). Inténtalo más tarde.`, {
+      status: res.status,
+    })
+  }
+
+  try {
+    return await res.json()
+  } catch (err) {
+    throw new ApiError('La respuesta del servidor no es válida.', { cause: err })
+  }
+}
