@@ -11,6 +11,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +23,7 @@ import java.util.List;
 public class DependenciaService {
 
 	private static final String TIPO_CACHE = "DEPENDENCIA";
+	private static final List<String> ANIOS_COMPARACION = List.of("2022", "2023", "2024");
 
 	private final OecClient oecClient;
 	private final OecProperties propiedades;
@@ -73,6 +75,20 @@ public class DependenciaService {
 
 		cacheRepository.save(new ConsultaCache(TIPO_CACHE, clave(codigo, anio), serializar(dependencia), Instant.now()));
 		return dependencia;
+	}
+
+	/** Resumen de dependencia para cada año disponible en el cubo (2022-2024), para graficar evolución. */
+	public List<Dependencia> obtenerComparacion(String codigo) {
+		List<Dependencia> resultado = new ArrayList<>();
+		for (String anio : ANIOS_COMPARACION) {
+			try {
+				resultado.add(obtener(codigo, anio));
+			} catch (RuntimeException err) {
+				// Best-effort: si un año falla (ej. país sin datos ese año), se omite
+				// en vez de romper la comparación completa.
+			}
+		}
+		return resultado;
 	}
 
 	private Pais buscarPais(String codigo) {
