@@ -49,12 +49,6 @@ watch(error, (err) => {
   })
 })
 
-const pestanasPendientes = [
-  { value: 'economica', titulo: 'Dependencia económica', icono: 'pi pi-dollar' },
-  { value: 'estrategica', titulo: 'Dependencia estratégica', icono: 'pi pi-shield' },
-  { value: 'sectores', titulo: 'Análisis por sectores', icono: 'pi pi-th-large' },
-]
-
 const nombrePais = () => datos.value?.nombre ?? store.catalogoPorCodigo[codigoPais.value]?.nombre ?? ''
 const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.value]?.iso2 ?? null
 </script>
@@ -127,26 +121,6 @@ const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.val
             :cargando="cargandoSociosActual"
             :error="errorSociosActual"
           />
-        </div>
-      </template>
-
-      <!-- Pestañas preparadas para contenido futuro -->
-      <template v-for="p in pestanasPendientes" #[p.value] :key="p.value">
-        <div class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
-          <div
-            class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-16 text-center"
-          >
-            <span
-              class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600"
-            >
-              <i :class="p.icono" class="text-xl" />
-            </span>
-            <h3 class="text-base font-bold text-slate-900">{{ p.titulo }}</h3>
-            <p class="max-w-sm text-sm text-slate-500">
-              Esta sección mostrará el desglose de {{ nombrePais() }} próximamente. La estructura ya
-              está preparada para recibir más datos de la OEC.
-            </p>
-          </div>
         </div>
       </template>
     </CountryTabs>
