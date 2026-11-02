@@ -14,7 +14,7 @@ defineEmits(['reintentar'])
     <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
       <i class="pi pi-exclamation-triangle text-xl" />
     </span>
-    <h3 class="text-base font-bold text-slate-900">Error al consultar la OEC</h3>
+    <h3 class="text-base font-bold text-slate-900">Error al consultar el servidor</h3>
     <p class="max-w-md text-sm text-slate-500">{{ mensaje }}</p>
     <Button
       label="Reintentar"

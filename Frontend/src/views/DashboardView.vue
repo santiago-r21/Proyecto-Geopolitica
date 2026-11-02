@@ -40,7 +40,7 @@ watch(error, (err) => {
   if (!err) return
   toast.add({
     severity: 'error',
-    summary: 'No se pudo consultar la OEC',
+    summary: 'No se pudo consultar el servidor',
     detail: err.message ?? 'Inténtalo de nuevo en unos segundos.',
     life: 4000,
   })
