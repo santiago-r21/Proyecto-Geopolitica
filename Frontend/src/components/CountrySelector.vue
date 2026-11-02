@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
@@ -21,8 +21,22 @@ const paisesFavoritos = computed(() =>
 
 // El buscador es solo para encontrar un país nuevo, no para mostrar el actual
 // (eso ya lo muestra la cabecera y el select de favoritos) — por eso siempre
-// vuelve a quedar vacío (placeholder) después de elegir.
+// vuelve a quedar vacío (placeholder) después de elegir. Se resetea con un
+// watch sobre `codigo` (no dentro de `seleccionar`) para que también se
+// limpie cuando el país cambia por otro camino, como el select de favoritos.
+// El AutoComplete de PrimeVue no siempre resincroniza su texto visible solo
+// con el v-model puesto en null desde afuera, así que además se limpia el
+// <input> nativo por DOM directamente (sin remontar el componente — eso
+// rompía la selección con Enter, que hace varios pasos internos después de
+// elegir una opción).
+const buscadorRef = ref(null)
 const paisBuscado = ref(null)
+watch(codigo, async () => {
+  paisBuscado.value = null
+  await nextTick()
+  const input = buscadorRef.value?.$el?.querySelector('input')
+  if (input) input.value = ''
+})
 
 const sugerencias = ref([])
 function buscar({ query }) {
@@ -34,7 +48,6 @@ function buscar({ query }) {
 
 function seleccionar({ value }) {
   codigo.value = value.codigo
-  paisBuscado.value = null
 }
 </script>
 
@@ -58,6 +71,7 @@ function seleccionar({ value }) {
 
       <AutoComplete
         v-else
+        ref="buscadorRef"
         v-model="paisBuscado"
         :suggestions="sugerencias"
         option-label="nombre"
