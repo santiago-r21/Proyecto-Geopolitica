@@ -1,4 +1,4 @@
-package com.Geopolitica.Proyecto.oec;
+package com.Geopolitica.Proyecto.client;
 
 /** Error normalizado para cualquier fallo al consultar la OEC API. */
 public class OecException extends RuntimeException {

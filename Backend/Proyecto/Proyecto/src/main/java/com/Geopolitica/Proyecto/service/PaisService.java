@@ -1,9 +1,10 @@
-package com.Geopolitica.Proyecto.pais;
+package com.Geopolitica.Proyecto.service;
 
-import com.Geopolitica.Proyecto.cache.ConsultaCache;
-import com.Geopolitica.Proyecto.cache.ConsultaCacheRepository;
-import com.Geopolitica.Proyecto.oec.OecClient;
-import com.Geopolitica.Proyecto.oec.OecProperties;
+import com.Geopolitica.Proyecto.client.OecClient;
+import com.Geopolitica.Proyecto.client.OecProperties;
+import com.Geopolitica.Proyecto.dto.Pais;
+import com.Geopolitica.Proyecto.model.ConsultaCache;
+import com.Geopolitica.Proyecto.repository.ConsultaCacheRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;

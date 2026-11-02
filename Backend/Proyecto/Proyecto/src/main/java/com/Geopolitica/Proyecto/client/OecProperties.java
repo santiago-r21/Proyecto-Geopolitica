@@ -1,4 +1,4 @@
-package com.Geopolitica.Proyecto.oec;
+package com.Geopolitica.Proyecto.client;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
