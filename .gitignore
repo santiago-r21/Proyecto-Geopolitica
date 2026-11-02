@@ -24,6 +24,9 @@ HELP.md
 .DS_Store
 Thumbs.db
 
+# Claude Code (local tooling state, no es parte del proyecto)
+.claude/
+
 # Env (no secrets today, but keep the habit)
 .env
 .env.local
