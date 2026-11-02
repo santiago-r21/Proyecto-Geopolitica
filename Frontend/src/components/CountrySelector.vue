@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
@@ -15,12 +15,10 @@ const paisesFavoritos = computed(() =>
   store.favoritos.map((id) => store.catalogoPorCodigo[id]).filter(Boolean),
 )
 
-// El AutoComplete trabaja con el objeto país completo (no con el código), así
-// que se mantiene sincronizado con `codigo` en ambos sentidos.
-const paisBuscado = ref(store.catalogoPorCodigo[codigo.value] ?? null)
-watch([codigo, () => store.catalogo], ([c]) => {
-  paisBuscado.value = store.catalogoPorCodigo[c] ?? paisBuscado.value
-})
+// El buscador es solo para encontrar un país nuevo, no para mostrar el actual
+// (eso ya lo muestra la cabecera y el select de favoritos) — por eso siempre
+// vuelve a quedar vacío (placeholder) después de elegir.
+const paisBuscado = ref(null)
 
 const sugerencias = ref([])
 function buscar({ query }) {
@@ -32,11 +30,24 @@ function buscar({ query }) {
 
 function seleccionar({ value }) {
   codigo.value = value.codigo
+  paisBuscado.value = null
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+    <!-- Guardar/quitar de favoritos (toggle) -->
+    <Button
+      :icon="store.esFavorito(codigo) ? 'pi pi-star-fill' : 'pi pi-star'"
+      :severity="store.esFavorito(codigo) ? 'warn' : 'secondary'"
+      text
+      rounded
+      class="shrink-0"
+      :aria-label="store.esFavorito(codigo) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+      v-tooltip.top="store.esFavorito(codigo) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+      @click="store.alternarFavorito(codigo)"
+    />
+
     <!-- Buscador: catálogo completo -->
     <div v-if="store.catalogoError" class="flex items-center gap-2 text-xs text-rose-600">
       <span>No se pudo cargar el catálogo de países.</span>
@@ -62,7 +73,7 @@ function seleccionar({ value }) {
       force-selection
       empty-search-message="Ningún país coincide."
       aria-label="Busca un país"
-      class="w-full sm:w-44"
+      class="w-full sm:w-48"
       input-class="w-full text-sm font-semibold text-slate-800"
       @complete="buscar"
       @item-select="seleccionar"
@@ -74,17 +85,6 @@ function seleccionar({ value }) {
         </span>
       </template>
     </AutoComplete>
-
-    <!-- Guardar/quitar de favoritos (toggle) -->
-    <Button
-      :icon="store.esFavorito(codigo) ? 'pi pi-star-fill' : 'pi pi-star'"
-      :severity="store.esFavorito(codigo) ? 'warn' : 'secondary'"
-      text
-      rounded
-      :aria-label="store.esFavorito(codigo) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
-      v-tooltip.top="store.esFavorito(codigo) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
-      @click="store.alternarFavorito(codigo)"
-    />
 
     <!-- Favoritos -->
     <Select
