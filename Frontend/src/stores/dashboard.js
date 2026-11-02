@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { fetchRecords } from '../services/oec/client.js'
 import {
@@ -11,11 +11,15 @@ import { paisPorCodigo } from '../services/oec/reference.js'
 import { transformar } from '../services/oec/transform.js'
 
 /**
- * Store de sesión: cachea en memoria los datos de dependencia ya consultados por país.
- * Vive mientras la pestaña está abierta (se pierde al recargar, F5) y evita volver a
- * golpear la OEC API cada vez que el usuario cambia de país si ya tenemos su resultado.
+ * Store del dashboard: qué país y pestaña están seleccionados, más los datos de
+ * dependencia por país cacheados en memoria durante la sesión (se pierden al
+ * recargar la página, F5 — es intencional). Cambiar `codigoPais` dispara la
+ * consulta a la OEC automáticamente si ese país no está ya en caché.
  */
-export const useDatosPaisStore = defineStore('datosPais', () => {
+export const useDashboardStore = defineStore('dashboard', () => {
+  const codigoPais = ref('CO')
+  const pestanaActiva = ref('resumen')
+
   const cache = reactive({}) // { [codigo]: { datos, consultadoEn } }
   const cargando = reactive({}) // { [codigo]: boolean }
   const error = reactive({}) // { [codigo]: Error|null }
@@ -26,7 +30,7 @@ export const useDatosPaisStore = defineStore('datosPais', () => {
   const controladores = {}
 
   /**
-   * Devuelve los datos del país, usando caché si ya existen.
+   * Resuelve los datos de un país, usando caché si ya existen.
    * @param {string} codigo
    * @param {{ forzar?: boolean }} [opciones] - `forzar: true` ignora la caché y recarga.
    */
@@ -79,7 +83,7 @@ export const useDatosPaisStore = defineStore('datosPais', () => {
         return datos
       } catch (err) {
         if (err?.name === 'AbortError' || signal.aborted) return cache[codigo]?.datos ?? null
-        // No cacheamos el error: así el próximo intento (cambio de pestaña o "recargar")
+        // No cacheamos el error: así el próximo intento (cambio de país o "recargar")
         // vuelve a consultar en vez de quedar atascado.
         error[codigo] = err
         return cache[codigo]?.datos ?? null
@@ -98,5 +102,29 @@ export const useDatosPaisStore = defineStore('datosPais', () => {
     delete cache[codigo]
   }
 
-  return { cache, cargando, error, obtener, invalidar }
+  /** Fuerza una recarga real del país actualmente seleccionado. */
+  function recargar() {
+    return obtener(codigoPais.value, { forzar: true })
+  }
+
+  // Cambiar de país consulta sus datos automáticamente si no están en caché.
+  watch(codigoPais, (codigo) => obtener(codigo), { immediate: true })
+
+  const datosActuales = computed(() => cache[codigoPais.value]?.datos ?? null)
+  const cargandoActual = computed(() => !!cargando[codigoPais.value])
+  const errorActual = computed(() => error[codigoPais.value] ?? null)
+
+  return {
+    codigoPais,
+    pestanaActiva,
+    cache,
+    cargando,
+    error,
+    datosActuales,
+    cargandoActual,
+    errorActual,
+    obtener,
+    invalidar,
+    recargar,
+  }
 })

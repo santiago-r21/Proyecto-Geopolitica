@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 
@@ -12,13 +13,17 @@ import DependencyCategories from '../components/DependencyCategories.vue'
 import PartnerDetail from '../components/PartnerDetail.vue'
 import CardSkeleton from '../components/states/CardSkeleton.vue'
 import ErrorState from '../components/states/ErrorState.vue'
-import { usarDatosPais } from '../composables/usarDatosPais.js'
+import { useDashboardStore } from '../stores/dashboard.js'
 import { paisPorCodigo } from '../services/oec/reference.js'
 
-const codigoPais = ref('CO')
-const pestanaActiva = ref('resumen')
-
-const { datos, cargando, error, recargar } = usarDatosPais(codigoPais)
+const store = useDashboardStore()
+const {
+  codigoPais,
+  pestanaActiva,
+  datosActuales: datos,
+  cargandoActual: cargando,
+  errorActual: error,
+} = storeToRefs(store)
 const toast = useToast()
 
 watch(datos, (pais) => {
@@ -64,7 +69,7 @@ const isoPais = () => datos.value?.iso ?? paisPorCodigo[codigoPais.value]?.iso ?
       <!-- RESUMEN -->
       <template #resumen>
         <div class="mx-auto max-w-7xl space-y-7 p-4 sm:p-6 lg:p-8">
-          <ErrorState v-if="error && !datos" :mensaje="error.message" @reintentar="recargar" />
+          <ErrorState v-if="error && !datos" :mensaje="error.message" @reintentar="store.recargar" />
 
           <template v-else-if="!datos">
             <section class="grid grid-cols-1 gap-6 lg:grid-cols-12">
