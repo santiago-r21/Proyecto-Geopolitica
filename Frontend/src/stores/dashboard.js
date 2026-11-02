@@ -1,20 +1,15 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { fetchRecords } from '../services/oec/client.js'
-import {
-  exportacionesPorSocio,
-  exportacionesPorSeccion,
-  importacionesPorSocio,
-  importacionesPorSeccion,
-} from '../services/oec/queries.js'
+import { obtenerDependencia } from '../services/api/client.js'
 import { paisPorCodigo } from '../services/oec/reference.js'
-import { transformar } from '../services/oec/transform.js'
+
+const ANIO = String(import.meta.env.VITE_OEC_YEAR ?? '2023')
 
 /**
  * Store del dashboard: qué país y pestaña están seleccionados, más los datos de
  * dependencia por país cacheados en memoria durante la sesión (se pierden al
  * recargar la página, F5 — es intencional). Cambiar `codigoPais` dispara la
- * consulta a la OEC automáticamente si ese país no está ya en caché.
+ * consulta a nuestro backend automáticamente si ese país no está ya en caché.
  */
 export const useDashboardStore = defineStore('dashboard', () => {
   const codigoPais = ref('CO')
@@ -55,29 +50,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const promesa = (async () => {
       try {
-        // Consultas obligatorias: potencias por exportación e importación.
-        const [filasExp, filasImp] = await Promise.all([
-          fetchRecords(exportacionesPorSocio(pais.oec), signal),
-          fetchRecords(importacionesPorSocio(pais.oec), signal),
-        ])
-
-        // Consultas best-effort: desglose por sección HS (para categorías reales).
-        const [secExp, secImp] = await Promise.allSettled([
-          fetchRecords(exportacionesPorSeccion(pais.oec), signal),
-          fetchRecords(importacionesPorSeccion(pais.oec), signal),
-        ])
-
+        const datos = await obtenerDependencia(pais.oec, ANIO, signal)
         if (signal.aborted) return cache[codigo]?.datos ?? null
-
-        const datos = transformar(
-          [
-            filasExp,
-            filasImp,
-            secExp.status === 'fulfilled' ? secExp.value : [],
-            secImp.status === 'fulfilled' ? secImp.value : [],
-          ],
-          codigo,
-        )
 
         cache[codigo] = { datos, consultadoEn: Date.now() }
         return datos

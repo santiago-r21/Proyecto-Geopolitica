@@ -26,18 +26,19 @@ npm run build     # build de producción en dist/
 npm run preview   # sirve dist/
 ```
 
-No hace falta backend ni proxy: la OEC API responde con `Access-Control-Allow-Origin: *`.
+**Necesita el backend corriendo** (`Backend/Proyecto/Proyecto`, Spring Boot + Postgres) en
+`http://localhost:8080` — es quien habla con la OEC, calcula el modelo del dashboard y lo cachea.
+El frontend solo le pega a nuestro propio backend, nunca a la OEC directamente.
 
 > En PowerShell con la _execution policy_ en `Restricted`, usa `npm.cmd run dev` o ejecuta una vez
 > `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ## Configuración (`.env`)
 
-| Variable        | Por defecto                          | Descripción                            |
-| --------------- | ------------------------------------ | ------------------------------------- |
-| `VITE_OEC_BASE` | `https://api-v2.oec.world/tesseract` | Base de la OEC API (motor Tesseract)  |
-| `VITE_OEC_CUBE` | `trade_i_baci_a_22`                  | Cubo BACI HS-2022 (abierto, sin token) |
-| `VITE_OEC_YEAR` | `2023`                               | Año consultado (2022–2024 disponibles) |
+| Variable        | Por defecto             | Descripción                                   |
+| --------------- | ------------------------ | --------------------------------------------- |
+| `VITE_API_BASE` | `http://localhost:8080`  | Base de nuestro backend                       |
+| `VITE_OEC_YEAR` | `2023`                   | Año consultado (2022–2024 disponibles)        |
 
 ## Estructura
 
@@ -45,13 +46,11 @@ No hace falta backend ni proxy: la OEC API responde con `Access-Control-Allow-Or
 src/
 ├─ App.vue                     Layout: sidebar + dashboard + <Toast>
 ├─ views/DashboardView.vue     Orquesta datos → estados carga/error → componentes
-├─ composables/
-│  └─ usarDatosPais.js         watch(código) → consulta OEC → transformar → { datos, cargando, error, recargar }
-├─ services/oec/
-│  ├─ client.js                fetch + AbortController + errores legibles (OecError)
-│  ├─ queries.js               las 4 consultas (export/import por socio y por sección×socio)
-│  ├─ transform.js             filas OEC → modelo del dashboard (TODAS las fórmulas aquí)
-│  └─ reference.js             PAISES, ids OEC, CLAVES_UE27, SOCIOS, NIVELES, CATEGORIAS, AREAS_SOCIO
+├─ stores/dashboard.js         Pinia: país/pestaña seleccionados + caché de sesión por país,
+│                              watch(código) → consulta el backend si no está cacheado
+├─ services/
+│  ├─ api/client.js            fetch a nuestro backend + errores legibles (ApiError)
+│  └─ oec/reference.js         PAISES (accesos rápidos) e ids OEC
 ├─ components/
 │  ├─ AppSidebar              barra lateral fija (marca + Menu + pie)
 │  ├─ CountryHeader / CountrySelector
@@ -72,7 +71,7 @@ usa identificadores y propiedades en **español**. Lo técnico/genérico y las A
 (`fetch`, `watch`, `ref`, `AbortController`, `severity`, `value`…) se mantienen en inglés. Los
 nombres de archivo de componente siguen la convención PascalCase de Vue.
 
-Modelo que entrega `transformar()` / consume la vista:
+Modelo que entrega `GET /api/paises/{codigo}/dependencia` / consume la vista:
 `{ codigo, nombre, iso, subtitulo, indiceDependencia, vulnerabilidad{etiqueta,severity},
 pesos{economico,estrategico}, socios[], categorias[], detalleSocios[], meta{fuente,dataset,anio,…} }`.
 
@@ -90,13 +89,13 @@ producto). A partir de eso:
 | Índice de dependencia (0–100) y Vulnerabilidad    | **Derivado**: índice compuesto de concentración (`0.55·potencia_líder + 0.30·suma_potencias + 0.15·HHI`, con curva `^0.8`). No es un indicador oficial. |
 | Categorías «Inversión» e «Infraestructura», y áreas marcadas `est.` | **Estimado**: sin fuente directa en la OEC; se derivan del índice / de la cuota global del socio. |
 
-Todos los umbrales y pesos están centralizados y comentados en
-[`src/services/oec/transform.js`](src/services/oec/transform.js).
+Todos los umbrales y pesos están centralizados y comentados en el backend
+(`Backend/Proyecto/Proyecto/.../service/DependenciaTransformer.java` y `Referencia.java`).
 
 ## Notas
 
 - App de **escritorio**: la barra lateral está siempre visible (no hay Drawer ni menú móvil). El
   layout se adapta al redimensionar la ventana (2 columnas → 1, categorías 6→3→2).
-- Sin persistencia: cada cambio de país dispara consultas nuevas. El último resultado se mantiene en
-  memoria sólo para no parpadear durante la recarga.
-- Peticiones en vuelo se cancelan (`AbortController`) al cambiar de país.
+- Caché de sesión (Pinia, `stores/dashboard.js`): volver a un país ya consultado en esta pestaña no
+  dispara una nueva petición; se pierde al recargar la página (F5), es intencional.
+- Peticiones en vuelo se cancelan (`AbortController`) al forzar una recarga.
