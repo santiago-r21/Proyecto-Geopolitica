@@ -103,7 +103,14 @@ const opcionesGrafico = computed(() => ({
       <div
         class="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"
       >
-        <i class="pi pi-info-circle shrink-0 text-sky-600" />
+        <i
+          class="pi pi-info-circle shrink-0 cursor-help text-sky-600"
+          v-tooltip.bottom="{
+            value:
+              'Mide la concentración del comercio con estas 3 potencias (EE. UU., China, UE). Un índice bajo no significa que el país esté \'a salvo\' — puede deberse a que su comercio es mayormente con otros países, no a su situación política o económica general.',
+            class: 'tooltip-ancho',
+          }"
+        />
         <p>
           Este índice combina dependencia económica ({{ pesos.economico }}%) y estratégica
           ({{ pesos.estrategico }}%)
