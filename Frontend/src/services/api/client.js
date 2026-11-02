@@ -60,3 +60,8 @@ export function obtenerDependencia(codigoOec, anio, signal) {
 export function obtenerSocios(codigoOec, anio, signal) {
   return obtenerJson(`${API_BASE}/api/paises/${codigoOec}/socios?anio=${anio}`, signal)
 }
+
+/** Obtiene el catálogo completo de países disponibles (para el buscador). */
+export function obtenerCatalogo() {
+  return obtenerJson(`${API_BASE}/api/paises`)
+}

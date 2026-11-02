@@ -1,12 +1,16 @@
 <script setup>
+import Button from 'primevue/button'
 import CountryFlag from './CountryFlag.vue'
+import { useDashboardStore } from '../stores/dashboard.js'
 
-/** Cabecera del país: bandera, nombre, badge de monitoreo y selector (slot). */
+/** Cabecera del país: favorito, bandera, nombre, badge de monitoreo y selector (slot). */
 defineProps({
   nombre: { type: String, default: '' },
   iso: { type: String, default: null },
   subtitulo: { type: String, default: '' },
 })
+
+const store = useDashboardStore()
 </script>
 
 <template>
@@ -31,10 +35,23 @@ defineProps({
         </div>
         <p class="mt-0.5 text-xs font-medium text-slate-500">{{ subtitulo }}</p>
       </div>
+
+      <!-- Sibling directo de la bandera (no del renglón del nombre) para que
+           `items-center` lo centre verticalmente contra la bandera, no contra
+           el bloque nombre+subtítulo. -->
+      <Button
+        :icon="store.esFavorito(store.codigoPais) ? 'pi pi-star-fill' : 'pi pi-star'"
+        :severity="store.esFavorito(store.codigoPais) ? 'warn' : 'secondary'"
+        text
+        rounded
+        class="shrink-0"
+        :aria-label="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+        v-tooltip.top="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+        @click="store.alternarFavorito(store.codigoPais)"
+      />
     </div>
 
-    <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-      <label class="text-xs font-medium text-slate-500">Selecciona un país:</label>
+    <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3 lg:flex-1">
       <slot />
     </div>
   </div>

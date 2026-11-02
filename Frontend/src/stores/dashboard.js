@@ -1,7 +1,8 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { obtenerDependencia, obtenerSocios } from '../services/api/client.js'
-import { paisPorCodigo } from '../services/oec/reference.js'
+import { obtenerDependencia, obtenerSocios, obtenerCatalogo } from '../services/api/client.js'
+import { cargarFavoritos, guardarFavoritos } from '../services/favoritos.js'
+import { FAVORITOS_POR_DEFECTO } from '../services/oec/reference.js'
 
 const ANIO = String(import.meta.env.VITE_OEC_YEAR ?? '2023')
 
@@ -21,12 +22,6 @@ function crearRecurso(cache, cargando, error, consultar) {
 
     if (forzar) controladores[codigo]?.abort()
 
-    const pais = paisPorCodigo[codigo]
-    if (!pais) {
-      error[codigo] = new Error(`País no soportado: ${codigo}`)
-      return null
-    }
-
     const controller = new AbortController()
     controladores[codigo] = controller
     const { signal } = controller
@@ -36,7 +31,7 @@ function crearRecurso(cache, cargando, error, consultar) {
 
     const promesa = (async () => {
       try {
-        const datos = await consultar(pais, signal)
+        const datos = await consultar(codigo, signal)
         if (signal.aborted) return cache[codigo]?.datos ?? null
 
         cache[codigo] = { datos, consultadoEn: Date.now() }
@@ -65,30 +60,52 @@ function crearRecurso(cache, cargando, error, consultar) {
 }
 
 /**
- * Store del dashboard: qué país y pestaña están seleccionados, más los datos
- * (resumen de dependencia y socios por país) cacheados en memoria durante la
- * sesión (se pierden al recargar la página, F5 — es intencional). Cambiar
- * `codigoPais` dispara la consulta del resumen automáticamente; los socios por
- * país (más pesados, solo para el mapa) se consultan de forma perezosa, solo
- * al entrar a la pestaña "mapa".
+ * Store del dashboard: qué país y pestaña están seleccionados, el catálogo
+ * completo de países (para el buscador), los favoritos del usuario
+ * (localStorage) y los datos (resumen de dependencia y socios por país)
+ * cacheados en memoria durante la sesión (se pierden al recargar la página,
+ * F5 — es intencional). Cambiar `codigoPais` dispara la consulta del resumen
+ * automáticamente; los socios por país (más pesados, solo para el mapa) se
+ * consultan de forma perezosa, solo al entrar a la pestaña "mapa".
  */
 export const useDashboardStore = defineStore('dashboard', () => {
-  const codigoPais = ref('CO')
+  const codigoPais = ref('sacol') // id de la OEC (ej. 'sacol' = Colombia)
   const pestanaActiva = ref('resumen')
 
   const cache = reactive({}) // { [codigo]: { datos, consultadoEn } }
   const cargando = reactive({}) // { [codigo]: boolean }
   const error = reactive({}) // { [codigo]: Error|null }
-  const recursoDependencia = crearRecurso(cache, cargando, error, (pais, signal) =>
-    obtenerDependencia(pais.oec, ANIO, signal),
+  const recursoDependencia = crearRecurso(cache, cargando, error, (codigo, signal) =>
+    obtenerDependencia(codigo, ANIO, signal),
   )
 
   const cacheSocios = reactive({}) // { [codigo]: { datos, consultadoEn } }
   const cargandoSocios = reactive({}) // { [codigo]: boolean }
   const errorSocios = reactive({}) // { [codigo]: Error|null }
-  const recursoSocios = crearRecurso(cacheSocios, cargandoSocios, errorSocios, (pais, signal) =>
-    obtenerSocios(pais.oec, ANIO, signal),
+  const recursoSocios = crearRecurso(cacheSocios, cargandoSocios, errorSocios, (codigo, signal) =>
+    obtenerSocios(codigo, ANIO, signal),
   )
+
+  // Catálogo completo de países (GET /api/paises), para el buscador. Se carga
+  // una sola vez, no por país: la validación de "país soportado" ya la hace
+  // el backend, así que el store no necesita una lista propia para eso.
+  const catalogo = ref([])
+  const cargandoCatalogo = ref(false)
+  const catalogoError = ref(null)
+  const catalogoPorCodigo = computed(() => Object.fromEntries(catalogo.value.map((p) => [p.codigo, p])))
+
+  async function cargarCatalogo() {
+    if (catalogo.value.length || cargandoCatalogo.value) return
+    cargandoCatalogo.value = true
+    catalogoError.value = null
+    try {
+      catalogo.value = await obtenerCatalogo()
+    } catch (err) {
+      catalogoError.value = err
+    } finally {
+      cargandoCatalogo.value = false
+    }
+  }
 
   /** Fuerza una recarga real del resumen del país actualmente seleccionado. */
   function recargar() {
@@ -99,6 +116,22 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function recargarSocios() {
     return recursoSocios.obtener(codigoPais.value, { forzar: true })
   }
+
+  // Favoritos del usuario (localStorage, sin backend — ver services/favoritos.js).
+  const favoritos = ref(cargarFavoritos(FAVORITOS_POR_DEFECTO))
+
+  function esFavorito(codigo) {
+    return favoritos.value.includes(codigo)
+  }
+
+  function alternarFavorito(codigo) {
+    favoritos.value = esFavorito(codigo)
+      ? favoritos.value.filter((c) => c !== codigo)
+      : [...favoritos.value, codigo]
+    guardarFavoritos(favoritos.value)
+  }
+
+  cargarCatalogo()
 
   // Cambiar de país consulta el resumen automáticamente si no está en caché.
   watch(codigoPais, (codigo) => recursoDependencia.obtener(codigo), { immediate: true })
@@ -142,5 +175,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
     obtenerSocios: recursoSocios.obtener,
     invalidarSocios: recursoSocios.invalidar,
     recargarSocios,
+    catalogo,
+    cargandoCatalogo,
+    catalogoError,
+    catalogoPorCodigo,
+    cargarCatalogo,
+    favoritos,
+    esFavorito,
+    alternarFavorito,
   }
 })
