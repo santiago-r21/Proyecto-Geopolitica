@@ -19,8 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -93,5 +95,44 @@ class DependenciaServiceTest {
 
 		assertFalse(resultado.meta().haySecciones());
 		verify(cacheRepository).save(any(ConsultaCache.class));
+	}
+
+	@Test
+	void obtenerComparacionDevuelveUnResultadoPorCadaAnioDisponible() {
+		when(cacheRepository.findByTipoAndClave(eq("DEPENDENCIA"), any())).thenReturn(Optional.empty());
+		when(paisService.obtenerCatalogo()).thenReturn(List.of(new Pais("sacol", "Colombia", "co")));
+		when(oecClient.exportacionesPorSocio(eq("sacol"), any())).thenAnswer(inv -> "exp-" + inv.getArgument(1));
+		when(oecClient.importacionesPorSocio(eq("sacol"), any())).thenAnswer(inv -> "imp-" + inv.getArgument(1));
+		when(oecClient.fetchRecords(argThat(r -> r != null && !r.contains("Section"))))
+			.thenReturn(List.of(fila("{\"Importer Country ID\":\"nausa\",\"Trade Value\":100}")));
+		when(oecClient.fetchRecords(argThat(r -> r != null && r.contains("Section")))).thenReturn(List.of());
+
+		List<Dependencia> resultado = dependenciaService.obtenerComparacion("sacol");
+
+		assertEquals(3, resultado.size());
+		assertEquals(List.of("2022", "2023", "2024"),
+			resultado.stream().map(d -> d.meta().anio()).toList());
+		verify(cacheRepository, times(3)).save(any(ConsultaCache.class));
+	}
+
+	@Test
+	void obtenerComparacionOmiteElAnioQueFallaSinRomperLosDemas() {
+		when(cacheRepository.findByTipoAndClave(eq("DEPENDENCIA"), any())).thenReturn(Optional.empty());
+		when(paisService.obtenerCatalogo()).thenReturn(List.of(new Pais("sacol", "Colombia", "co")));
+
+		// Rutas distintas por año (como la implementación real), para poder hacer
+		// fallar solo la de 2023 sin afectar 2022/2024.
+		when(oecClient.exportacionesPorSocio(eq("sacol"), any())).thenAnswer(inv -> "exp-" + inv.getArgument(1));
+		when(oecClient.importacionesPorSocio(eq("sacol"), any())).thenAnswer(inv -> "imp-" + inv.getArgument(1));
+
+		when(oecClient.fetchRecords("exp-2023")).thenThrow(new OecException("La OEC no respondió"));
+		when(oecClient.fetchRecords(argThat(r -> r != null && !"exp-2023".equals(r) && !r.contains("Section"))))
+			.thenReturn(List.of(fila("{\"Importer Country ID\":\"nausa\",\"Trade Value\":100}")));
+		when(oecClient.fetchRecords(argThat(r -> r != null && r.contains("Section")))).thenReturn(List.of());
+
+		List<Dependencia> resultado = dependenciaService.obtenerComparacion("sacol");
+
+		assertEquals(2, resultado.size());
+		assertEquals(List.of("2022", "2024"), resultado.stream().map(d -> d.meta().anio()).toList());
 	}
 }
