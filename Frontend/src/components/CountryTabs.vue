@@ -14,6 +14,7 @@ const activa = defineModel({ type: String, default: 'resumen' })
 
 const pestanas = [
   { value: 'resumen', etiqueta: 'Resumen' },
+  { value: 'mapa', etiqueta: 'Mapa' },
   { value: 'economica', etiqueta: 'Económica' },
   { value: 'estrategica', etiqueta: 'Estratégica' },
   { value: 'sectores', etiqueta: 'Sectores' },

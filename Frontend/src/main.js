@@ -7,6 +7,7 @@ import Tooltip from 'primevue/tooltip'
 
 import 'primeicons/primeicons.css'
 import 'flag-icons/css/flag-icons.min.css'
+import 'leaflet/dist/leaflet.css'
 import './style.css'
 
 import App from './App.vue'

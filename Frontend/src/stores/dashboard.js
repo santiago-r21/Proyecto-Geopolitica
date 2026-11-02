@@ -1,34 +1,20 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { obtenerDependencia } from '../services/api/client.js'
+import { obtenerDependencia, obtenerSocios } from '../services/api/client.js'
 import { paisPorCodigo } from '../services/oec/reference.js'
 
 const ANIO = String(import.meta.env.VITE_OEC_YEAR ?? '2023')
 
 /**
- * Store del dashboard: qué país y pestaña están seleccionados, más los datos de
- * dependencia por país cacheados en memoria durante la sesión (se pierden al
- * recargar la página, F5 — es intencional). Cambiar `codigoPais` dispara la
- * consulta a nuestro backend automáticamente si ese país no está ya en caché.
+ * Caché por país con dedupe (una sola consulta en vuelo) y cancelación (`forzar`
+ * aborta la anterior). Genérico sobre qué se consulta, para que el resumen de
+ * dependencia y los socios por país (mapa) compartan la misma lógica sin
+ * fragmentar el estado en stores separados.
  */
-export const useDashboardStore = defineStore('dashboard', () => {
-  const codigoPais = ref('CO')
-  const pestanaActiva = ref('resumen')
-
-  const cache = reactive({}) // { [codigo]: { datos, consultadoEn } }
-  const cargando = reactive({}) // { [codigo]: boolean }
-  const error = reactive({}) // { [codigo]: Error|null }
-
-  // No reactivos a propósito: son detalles de implementación (dedupe/cancelación),
-  // no estado que la UI necesite observar.
+function crearRecurso(cache, cargando, error, consultar) {
   const enVuelo = {}
   const controladores = {}
 
-  /**
-   * Resuelve los datos de un país, usando caché si ya existen.
-   * @param {string} codigo
-   * @param {{ forzar?: boolean }} [opciones] - `forzar: true` ignora la caché y recarga.
-   */
   async function obtener(codigo, { forzar = false } = {}) {
     if (!forzar && cache[codigo]) return cache[codigo].datos
     if (!forzar && enVuelo[codigo]) return enVuelo[codigo]
@@ -50,7 +36,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const promesa = (async () => {
       try {
-        const datos = await obtenerDependencia(pais.oec, ANIO, signal)
+        const datos = await consultar(pais, signal)
         if (signal.aborted) return cache[codigo]?.datos ?? null
 
         cache[codigo] = { datos, consultadoEn: Date.now() }
@@ -71,22 +57,69 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return promesa
   }
 
-  /** Descarta la caché de un país (fuerza una consulta real en el próximo `obtener`). */
   function invalidar(codigo) {
     delete cache[codigo]
   }
 
-  /** Fuerza una recarga real del país actualmente seleccionado. */
+  return { obtener, invalidar }
+}
+
+/**
+ * Store del dashboard: qué país y pestaña están seleccionados, más los datos
+ * (resumen de dependencia y socios por país) cacheados en memoria durante la
+ * sesión (se pierden al recargar la página, F5 — es intencional). Cambiar
+ * `codigoPais` dispara la consulta del resumen automáticamente; los socios por
+ * país (más pesados, solo para el mapa) se consultan de forma perezosa, solo
+ * al entrar a la pestaña "mapa".
+ */
+export const useDashboardStore = defineStore('dashboard', () => {
+  const codigoPais = ref('CO')
+  const pestanaActiva = ref('resumen')
+
+  const cache = reactive({}) // { [codigo]: { datos, consultadoEn } }
+  const cargando = reactive({}) // { [codigo]: boolean }
+  const error = reactive({}) // { [codigo]: Error|null }
+  const recursoDependencia = crearRecurso(cache, cargando, error, (pais, signal) =>
+    obtenerDependencia(pais.oec, ANIO, signal),
+  )
+
+  const cacheSocios = reactive({}) // { [codigo]: { datos, consultadoEn } }
+  const cargandoSocios = reactive({}) // { [codigo]: boolean }
+  const errorSocios = reactive({}) // { [codigo]: Error|null }
+  const recursoSocios = crearRecurso(cacheSocios, cargandoSocios, errorSocios, (pais, signal) =>
+    obtenerSocios(pais.oec, ANIO, signal),
+  )
+
+  /** Fuerza una recarga real del resumen del país actualmente seleccionado. */
   function recargar() {
-    return obtener(codigoPais.value, { forzar: true })
+    return recursoDependencia.obtener(codigoPais.value, { forzar: true })
   }
 
-  // Cambiar de país consulta sus datos automáticamente si no están en caché.
-  watch(codigoPais, (codigo) => obtener(codigo), { immediate: true })
+  /** Fuerza una recarga real de los socios del país actualmente seleccionado. */
+  function recargarSocios() {
+    return recursoSocios.obtener(codigoPais.value, { forzar: true })
+  }
+
+  // Cambiar de país consulta el resumen automáticamente si no está en caché.
+  watch(codigoPais, (codigo) => recursoDependencia.obtener(codigo), { immediate: true })
+
+  // Los socios por país solo se consultan al entrar a la pestaña "mapa" (no al
+  // cambiar de país sin abrirla) — evita una consulta pesada que casi nadie usa.
+  watch(
+    [codigoPais, pestanaActiva],
+    ([codigo, pestana]) => {
+      if (pestana === 'mapa') recursoSocios.obtener(codigo)
+    },
+    { immediate: true },
+  )
 
   const datosActuales = computed(() => cache[codigoPais.value]?.datos ?? null)
   const cargandoActual = computed(() => !!cargando[codigoPais.value])
   const errorActual = computed(() => error[codigoPais.value] ?? null)
+
+  const sociosActuales = computed(() => cacheSocios[codigoPais.value]?.datos ?? null)
+  const cargandoSociosActual = computed(() => !!cargandoSocios[codigoPais.value])
+  const errorSociosActual = computed(() => errorSocios[codigoPais.value] ?? null)
 
   return {
     codigoPais,
@@ -97,8 +130,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
     datosActuales,
     cargandoActual,
     errorActual,
-    obtener,
-    invalidar,
+    obtener: recursoDependencia.obtener,
+    invalidar: recursoDependencia.invalidar,
     recargar,
+    cacheSocios,
+    cargandoSocios,
+    errorSocios,
+    sociosActuales,
+    cargandoSociosActual,
+    errorSociosActual,
+    obtenerSocios: recursoSocios.obtener,
+    invalidarSocios: recursoSocios.invalidar,
+    recargarSocios,
   }
 })
