@@ -11,12 +11,11 @@ const tema = useTemaStore()
   <div class="min-h-screen w-full bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200">
     <Button
       :icon="tema.oscuro ? 'pi pi-sun' : 'pi pi-moon'"
-      text
       rounded
       severity="secondary"
-      class="fixed right-3 top-3 z-30 sm:right-5 sm:top-5"
+      class="fixed bottom-3 right-3 z-30 h-11 w-11 shadow-lg sm:bottom-5 sm:right-10"
       :aria-label="tema.oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-      v-tooltip.left="tema.oscuro ? 'Modo claro' : 'Modo oscuro'"
+      v-tooltip.top="tema.oscuro ? 'Modo claro' : 'Modo oscuro'"
       @click="tema.alternar()"
     />
     <DashboardView />
