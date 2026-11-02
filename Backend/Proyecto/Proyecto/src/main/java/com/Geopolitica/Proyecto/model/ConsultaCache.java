@@ -17,10 +17,10 @@ import java.time.Instant;
 
 /**
  * Caché durable de resultados ya calculados desde la OEC, por (tipo, clave).
- * P.ej. tipo="CATALOGO_PAISES", clave="global" -> el catálogo completo de países;
- * más adelante tipo="DEPENDENCIA", clave="CO:2023" -> el resumen de un país/año.
- * No hay TTL: los datos históricos de la OEC no cambian, así que una vez
- * cacheados no se vuelven a pedir.
+ * Tipos en uso: "CATALOGO_PAISES" (clave="global", catálogo completo de países);
+ * "DEPENDENCIA" y "SOCIOS" (clave="{id OEC}:{año}", ej. "sacol:2023"). No hay
+ * TTL: los datos históricos de la OEC no cambian, así que una vez cacheados no
+ * se vuelven a pedir.
  */
 @Entity
 @Table(name = "consulta_cache", uniqueConstraints = @UniqueConstraint(columnNames = {"tipo", "clave"}))

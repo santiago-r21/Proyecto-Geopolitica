@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Cliente HTTP mínimo para la OEC API (motor Tesseract), puerto de
- * Frontend/src/services/oec/client.js: mismos 2 reintentos con backoff ante 5xx,
- * sin reintento ante 4xx o fallos de red/parseo (esos se propagan de inmediato).
+ * Cliente HTTP mínimo para la OEC API (motor Tesseract): 2 reintentos con backoff
+ * ante 5xx (la OEC devuelve errores esporádicos con consultas aún no cacheadas en
+ * su lado), sin reintento ante 4xx o fallos de red/parseo (esos se propagan de inmediato).
  */
 @Component
 public class OecClient {

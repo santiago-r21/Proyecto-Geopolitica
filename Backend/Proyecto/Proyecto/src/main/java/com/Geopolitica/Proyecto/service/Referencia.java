@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Datos estáticos para calcular la dependencia de un país, puerto de
- * Frontend/src/services/oec/reference.js. Cambiar umbrales/categorías/áreas se
- * resuelve tocando SÓLO este archivo y {@link DependenciaTransformer}.
+ * Datos estáticos para calcular la dependencia de un país (socios, umbrales,
+ * categorías, áreas). Cambiar umbrales/categorías/áreas se resuelve tocando
+ * SÓLO este archivo y {@link DependenciaTransformer}.
  */
 public final class Referencia {
 
@@ -16,7 +16,7 @@ public final class Referencia {
 
 	public static final String SUBTITULO_PAIS = "Dependencia económica y estratégica";
 
-	/** Uno de los 4 bloques del dashboard. {@code oec} es null para "ue"/"otros", igual que en reference.js. */
+	/** Uno de los 4 bloques del dashboard. {@code oec} es null para "ue"/"otros" (no son un único id OEC). */
 	public record InfoSocio(String clave, String nombre, String iso, String color, String oec) {
 	}
 

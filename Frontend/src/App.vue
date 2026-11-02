@@ -4,6 +4,11 @@ import Button from 'primevue/button'
 import DashboardView from './views/DashboardView.vue'
 import { useTemaStore } from './stores/tema.js'
 
+/**
+ * Raíz de la app: el dashboard completo + dos piezas globales que no
+ * pertenecen a ninguna pestaña en particular — el Toast (avisos de
+ * carga/error) y el botón flotante de tema claro/oscuro.
+ */
 const tema = useTemaStore()
 </script>
 
