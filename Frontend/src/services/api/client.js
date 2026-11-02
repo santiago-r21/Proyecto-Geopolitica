@@ -65,3 +65,13 @@ export function obtenerSocios(codigoOec, anio, signal) {
 export function obtenerCatalogo() {
   return obtenerJson(`${API_BASE}/api/paises`)
 }
+
+/**
+ * Obtiene el resumen de dependencia de un país para cada año disponible
+ * (2022-2024), para graficar su evolución.
+ * @param {string} codigoOec - id de la OEC (ej. 'sacol')
+ * @param {AbortSignal} [signal]
+ */
+export function obtenerComparacion(codigoOec, signal) {
+  return obtenerJson(`${API_BASE}/api/paises/${codigoOec}/comparacion`, signal)
+}

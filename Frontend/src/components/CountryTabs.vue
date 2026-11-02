@@ -15,6 +15,7 @@ const activa = defineModel({ type: String, default: 'resumen' })
 const pestanas = [
   { value: 'resumen', etiqueta: 'Resumen' },
   { value: 'mapa', etiqueta: 'Mapa' },
+  { value: 'comparar', etiqueta: 'Comparar' },
 ]
 
 const CLASE_BASE =
