@@ -29,6 +29,7 @@ function colorPorCuota(cuota) {
 let geojsonMundial = null // se descarga una sola vez y se reutiliza entre países
 let mapa = null
 let capaPaises = null
+let observador = null
 const contenedor = ref(null)
 
 const sociosPorIso2 = computed(() => {
@@ -77,6 +78,14 @@ onMounted(async () => {
     maxZoom: 6,
   }).setView([15, 0], 2)
 
+  // La pestaña "Mapa" sigue montada (solo oculta) mientras no está activa, así
+  // que Leaflet se inicializa con el contenedor en 0×0 y queda en gris hasta
+  // que algo fuerce un recálculo. Este observer llama a invalidateSize() cada
+  // vez que el contenedor realmente cambia de tamaño (ej. al activar la
+  // pestaña), sin que el componente necesite saber nada de pestañas/store.
+  observador = new ResizeObserver(() => mapa?.invalidateSize())
+  observador.observe(contenedor.value)
+
   if (!geojsonMundial) {
     const res = await fetch('/data/world-countries.geojson')
     geojsonMundial = await res.json()
@@ -85,6 +94,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  observador?.disconnect()
+  observador = null
   mapa?.remove()
   mapa = null
 })
