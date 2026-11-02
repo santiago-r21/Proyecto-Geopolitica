@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
@@ -21,8 +21,13 @@ const paisesFavoritos = computed(() =>
 
 // El buscador es solo para encontrar un país nuevo, no para mostrar el actual
 // (eso ya lo muestra la cabecera y el select de favoritos) — por eso siempre
-// vuelve a quedar vacío (placeholder) después de elegir.
+// vuelve a quedar vacío (placeholder) después de elegir. Se resetea con un
+// watch sobre `codigo` (no dentro de `seleccionar`) para que también se
+// limpie cuando el país cambia por otro camino, como el select de favoritos.
 const paisBuscado = ref(null)
+watch(codigo, () => {
+  paisBuscado.value = null
+})
 
 const sugerencias = ref([])
 function buscar({ query }) {
@@ -34,7 +39,6 @@ function buscar({ query }) {
 
 function seleccionar({ value }) {
   codigo.value = value.codigo
-  paisBuscado.value = null
 }
 </script>
 
