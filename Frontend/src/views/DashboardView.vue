@@ -14,6 +14,7 @@ import PartnerDetail from '../components/PartnerDetail.vue'
 import CardSkeleton from '../components/states/CardSkeleton.vue'
 import ErrorState from '../components/states/ErrorState.vue'
 import MapaDependencia from '../components/MapaDependencia.vue'
+import ComparacionDependencia from '../components/ComparacionDependencia.vue'
 import { useDashboardStore } from '../stores/dashboard.js'
 
 const store = useDashboardStore()
@@ -26,6 +27,9 @@ const {
   sociosActuales,
   cargandoSociosActual,
   errorSociosActual,
+  comparacionActual,
+  cargandoComparacionActual,
+  errorComparacionActual,
 } = storeToRefs(store)
 const toast = useToast()
 
@@ -126,6 +130,17 @@ const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.val
             :socios="sociosActuales"
             :cargando="cargandoSociosActual"
             :error="errorSociosActual"
+          />
+        </div>
+      </template>
+
+      <!-- COMPARAR -->
+      <template #comparar>
+        <div class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+          <ComparacionDependencia
+            :comparacion="comparacionActual"
+            :cargando="cargandoComparacionActual"
+            :error="errorComparacionActual"
           />
         </div>
       </template>

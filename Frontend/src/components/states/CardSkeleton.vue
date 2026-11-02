@@ -8,6 +8,7 @@ import Skeleton from 'primevue/skeleton'
  *  - rejilla : rejilla de categorías
  *  - detalle : "Detalle por Socio Principal"
  *  - mapa    : mapa interactivo de socios
+ *  - comparacion : gráficos de evolución entre años
  */
 defineProps({
   variante: { type: String, default: 'indice' },
@@ -19,6 +20,19 @@ defineProps({
     <Skeleton width="12rem" height="1rem" class="mb-2" />
     <Skeleton width="18rem" height="0.75rem" class="mb-6" />
     <Skeleton height="26rem" />
+  </div>
+
+  <div v-else-if="variante === 'comparacion'" class="space-y-6">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+      <Skeleton width="14rem" height="1rem" class="mb-2" />
+      <Skeleton width="18rem" height="0.75rem" class="mb-6" />
+      <Skeleton height="16rem" />
+    </div>
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+      <Skeleton width="14rem" height="1rem" class="mb-2" />
+      <Skeleton width="18rem" height="0.75rem" class="mb-6" />
+      <Skeleton height="16rem" />
+    </div>
   </div>
 
   <div

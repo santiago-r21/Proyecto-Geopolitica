@@ -1,6 +1,6 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { obtenerDependencia, obtenerSocios, obtenerCatalogo } from '../services/api/client.js'
+import { obtenerDependencia, obtenerSocios, obtenerCatalogo, obtenerComparacion } from '../services/api/client.js'
 import { cargarFavoritos, guardarFavoritos } from '../services/favoritos.js'
 import { FAVORITOS_POR_DEFECTO } from '../services/oec/reference.js'
 
@@ -65,8 +65,9 @@ function crearRecurso(cache, cargando, error, consultar) {
  * (localStorage) y los datos (resumen de dependencia y socios por país)
  * cacheados en memoria durante la sesión (se pierden al recargar la página,
  * F5 — es intencional). Cambiar `codigoPais` dispara la consulta del resumen
- * automáticamente; los socios por país (más pesados, solo para el mapa) se
- * consultan de forma perezosa, solo al entrar a la pestaña "mapa".
+ * automáticamente; los socios por país (mapa) y la comparación entre años
+ * (más pesados, menos usados) se consultan de forma perezosa, solo al entrar
+ * a su pestaña correspondiente.
  */
 export const useDashboardStore = defineStore('dashboard', () => {
   const codigoPais = ref('sacol') // id de la OEC (ej. 'sacol' = Colombia)
@@ -84,6 +85,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const errorSocios = reactive({}) // { [codigo]: Error|null }
   const recursoSocios = crearRecurso(cacheSocios, cargandoSocios, errorSocios, (codigo, signal) =>
     obtenerSocios(codigo, ANIO, signal),
+  )
+
+  const cacheComparacion = reactive({}) // { [codigo]: { datos, consultadoEn } }
+  const cargandoComparacion = reactive({}) // { [codigo]: boolean }
+  const errorComparacion = reactive({}) // { [codigo]: Error|null }
+  const recursoComparacion = crearRecurso(cacheComparacion, cargandoComparacion, errorComparacion, (codigo, signal) =>
+    obtenerComparacion(codigo, signal),
   )
 
   // Catálogo completo de países (GET /api/paises), para el buscador. Se carga
@@ -117,6 +125,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return recursoSocios.obtener(codigoPais.value, { forzar: true })
   }
 
+  /** Fuerza una recarga real de la comparación del país actualmente seleccionado. */
+  function recargarComparacion() {
+    return recursoComparacion.obtener(codigoPais.value, { forzar: true })
+  }
+
   // Favoritos del usuario (localStorage, sin backend — ver services/favoritos.js).
   const favoritos = ref(cargarFavoritos(FAVORITOS_POR_DEFECTO))
 
@@ -146,6 +159,16 @@ export const useDashboardStore = defineStore('dashboard', () => {
     { immediate: true },
   )
 
+  // La comparación entre años (3 consultas) solo se dispara al entrar a la
+  // pestaña "comparar", mismo criterio que los socios del mapa.
+  watch(
+    [codigoPais, pestanaActiva],
+    ([codigo, pestana]) => {
+      if (pestana === 'comparar') recursoComparacion.obtener(codigo)
+    },
+    { immediate: true },
+  )
+
   const datosActuales = computed(() => cache[codigoPais.value]?.datos ?? null)
   const cargandoActual = computed(() => !!cargando[codigoPais.value])
   const errorActual = computed(() => error[codigoPais.value] ?? null)
@@ -153,6 +176,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const sociosActuales = computed(() => cacheSocios[codigoPais.value]?.datos ?? null)
   const cargandoSociosActual = computed(() => !!cargandoSocios[codigoPais.value])
   const errorSociosActual = computed(() => errorSocios[codigoPais.value] ?? null)
+
+  const comparacionActual = computed(() => cacheComparacion[codigoPais.value]?.datos ?? null)
+  const cargandoComparacionActual = computed(() => !!cargandoComparacion[codigoPais.value])
+  const errorComparacionActual = computed(() => errorComparacion[codigoPais.value] ?? null)
 
   return {
     codigoPais,
@@ -175,6 +202,15 @@ export const useDashboardStore = defineStore('dashboard', () => {
     obtenerSocios: recursoSocios.obtener,
     invalidarSocios: recursoSocios.invalidar,
     recargarSocios,
+    cacheComparacion,
+    cargandoComparacion,
+    errorComparacion,
+    comparacionActual,
+    cargandoComparacionActual,
+    errorComparacionActual,
+    obtenerComparacion: recursoComparacion.obtener,
+    invalidarComparacion: recursoComparacion.invalidar,
+    recargarComparacion,
     catalogo,
     cargandoCatalogo,
     catalogoError,
