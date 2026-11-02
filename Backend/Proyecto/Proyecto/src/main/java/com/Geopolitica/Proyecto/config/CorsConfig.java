@@ -9,13 +9,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-	@Value("${app.cors.allowed-origins}")
-	private String[] allowedOrigins;
+	// Patrones, no orígenes exactos: Vite cambia de puerto si el suyo está ocupado
+	// (5173, 5174, 5175...), así que fijar un único puerto es frágil en desarrollo.
+	@Value("${app.cors.allowed-origin-patterns}")
+	private String[] allowedOriginPatterns;
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/api/**")
-			.allowedOrigins(allowedOrigins)
+			.allowedOriginPatterns(allowedOriginPatterns)
 			.allowedMethods("GET");
 	}
 }
