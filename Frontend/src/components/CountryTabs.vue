@@ -16,9 +16,6 @@ const pestanas = [
   { value: 'resumen', etiqueta: 'Resumen' },
   { value: 'mapa', etiqueta: 'Mapa' },
   { value: 'comparar', etiqueta: 'Comparar' },
-  { value: 'economica', etiqueta: 'Económica' },
-  { value: 'estrategica', etiqueta: 'Estratégica' },
-  { value: 'sectores', etiqueta: 'Sectores' },
 ]
 
 const CLASE_BASE =
