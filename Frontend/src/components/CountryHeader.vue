@@ -15,17 +15,7 @@ const store = useDashboardStore()
 
 <template>
   <div class="flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
-    <div class="flex items-center gap-3">
-      <Button
-        :icon="store.esFavorito(store.codigoPais) ? 'pi pi-star-fill' : 'pi pi-star'"
-        :severity="store.esFavorito(store.codigoPais) ? 'warn' : 'secondary'"
-        text
-        rounded
-        class="shrink-0"
-        :aria-label="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
-        v-tooltip.top="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
-        @click="store.alternarFavorito(store.codigoPais)"
-      />
+    <div class="flex items-center gap-4">
       <span
         class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 shadow-xs"
       >
@@ -42,12 +32,23 @@ const store = useDashboardStore()
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Monitoreo activo
           </span>
+          <Button
+            :icon="store.esFavorito(store.codigoPais) ? 'pi pi-star-fill' : 'pi pi-star'"
+            :severity="store.esFavorito(store.codigoPais) ? 'warn' : 'secondary'"
+            text
+            rounded
+            size="small"
+            class="shrink-0"
+            :aria-label="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+            v-tooltip.top="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+            @click="store.alternarFavorito(store.codigoPais)"
+          />
         </div>
         <p class="mt-0.5 text-xs font-medium text-slate-500">{{ subtitulo }}</p>
       </div>
     </div>
 
-    <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+    <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3 lg:flex-1 lg:max-w-xl">
       <slot />
     </div>
   </div>

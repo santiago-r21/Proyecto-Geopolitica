@@ -39,7 +39,7 @@ function seleccionar({ value }) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+  <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
     <!-- Buscador: catálogo completo -->
     <div class="flex min-w-0 flex-1 flex-col gap-1">
       <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Buscar</span>
