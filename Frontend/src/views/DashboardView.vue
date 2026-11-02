@@ -17,6 +17,12 @@ import MapaDependencia from '../components/MapaDependencia.vue'
 import ComparacionDependencia from '../components/ComparacionDependencia.vue'
 import { useDashboardStore } from '../stores/dashboard.js'
 
+/**
+ * Compone las 3 pestañas del dashboard (Resumen/Mapa/Comparar) dentro de
+ * `CountryTabs`, alimentando cada una desde `useDashboardStore()`. No tiene
+ * lógica propia de datos: solo arma estados de carga/error/toast alrededor
+ * de lo que ya expone el store.
+ */
 const store = useDashboardStore()
 const {
   codigoPais,

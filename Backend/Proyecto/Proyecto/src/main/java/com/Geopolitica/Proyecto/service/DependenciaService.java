@@ -110,14 +110,14 @@ public class DependenciaService {
 		return codigo + ":" + anio;
 	}
 
-	/** 3. Exportaciones del país por Sección HS × país socio. */
+	/** Exportaciones del país por Sección HS × país socio (best-effort, para categorías reales). */
 	private String exportacionesPorSeccion(String oecId, String anio) {
 		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Section,Importer+Country"
 			+ "&include=Exporter+Country:%s;Year:%s")
 			.formatted(propiedades.cube(), oecId, anio);
 	}
 
-	/** 4. Importaciones del país por Sección HS × país socio. */
+	/** Importaciones del país por Sección HS × país socio (best-effort, para categorías reales). */
 	private String importacionesPorSeccion(String oecId, String anio) {
 		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Section,Exporter+Country"
 			+ "&include=Importer+Country:%s;Year:%s")

@@ -25,8 +25,8 @@ import java.util.Map;
 
 /**
  * Convierte las filas crudas de la OEC en el modelo que consumen los componentes del
- * dashboard. Puerto de Frontend/src/services/oec/transform.js: TODAS las fórmulas y
- * umbrales del dashboard viven aquí y en {@link Referencia}, y son ajustables ahí.
+ * dashboard. TODAS las fórmulas y umbrales del dashboard viven aquí y en
+ * {@link Referencia}, y son ajustables ahí.
  *
  * Concepto: "dependencia" = exposición del país a las grandes potencias
  * (EE.UU., China, Unión Europea). "Otros Países" es el residual (resto del mundo).
