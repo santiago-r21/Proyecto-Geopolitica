@@ -11,6 +11,11 @@ import 'leaflet/dist/leaflet.css'
 import './style.css'
 
 import App from './App.vue'
+import { cargarTema } from './services/tema.js'
+
+// Se aplica antes de montar (no dentro del store) para que la página nunca
+// arranque en claro y salte a oscuro un instante después.
+document.documentElement.classList.toggle('app-dark', cargarTema())
 
 const app = createApp(App)
 
@@ -19,7 +24,6 @@ app.use(PrimeVue, {
   theme: {
     preset: Aura,
     options: {
-      // Nunca oscurecer automáticamente: el diseño de referencia es claro.
       darkModeSelector: '.app-dark',
       cssLayer: {
         name: 'primevue',

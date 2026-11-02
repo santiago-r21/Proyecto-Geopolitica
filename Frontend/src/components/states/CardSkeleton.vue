@@ -16,19 +16,19 @@ defineProps({
 </script>
 
 <template>
-  <div v-if="variante === 'mapa'" class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+  <div v-if="variante === 'mapa'" class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
     <Skeleton width="12rem" height="1rem" class="mb-2" />
     <Skeleton width="18rem" height="0.75rem" class="mb-6" />
     <Skeleton height="26rem" />
   </div>
 
   <div v-else-if="variante === 'comparacion'" class="space-y-6">
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <Skeleton width="14rem" height="1rem" class="mb-2" />
       <Skeleton width="18rem" height="0.75rem" class="mb-6" />
       <Skeleton height="16rem" />
     </div>
-    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+    <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
       <Skeleton width="14rem" height="1rem" class="mb-2" />
       <Skeleton width="18rem" height="0.75rem" class="mb-6" />
       <Skeleton height="16rem" />
@@ -42,7 +42,7 @@ defineProps({
     <div
       v-for="n in 6"
       :key="n"
-      class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs"
+      class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900"
     >
       <Skeleton shape="circle" size="2.25rem" class="mb-3" />
       <Skeleton width="70%" height="0.75rem" class="mb-2" />
@@ -52,7 +52,7 @@ defineProps({
 
   <div
     v-else
-    class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs"
+    class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900"
     :class="variante === 'indice' ? 'lg:col-span-7' : variante === 'lista' ? 'lg:col-span-5' : ''"
   >
     <Skeleton width="12rem" height="1rem" class="mb-2" />

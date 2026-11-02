@@ -84,7 +84,7 @@ function seleccionar({ value }) {
         scroll-height="18rem"
         empty-search-message="Ningún país coincide."
         aria-label="Busca un país"
-        input-class="text-sm font-semibold text-slate-800"
+        input-class="text-sm font-semibold text-slate-800 dark:text-slate-100"
         @complete="buscar"
         @item-select="seleccionar"
       >
@@ -110,14 +110,14 @@ function seleccionar({ value }) {
         empty-message="Guarda un país para verlo aquí."
         aria-label="Tus países favoritos"
         class="w-full sm:w-44"
-        :pt="{ label: 'flex items-center gap-2 text-sm font-semibold text-slate-800' }"
+        :pt="{ label: 'flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100' }"
       >
         <template #value="{ value }">
           <span v-if="store.esFavorito(value)" class="flex items-center gap-2">
             <CountryFlag :iso="store.catalogoPorCodigo[value]?.iso2" size="w-5 h-[0.9375rem]" />
             <span>{{ store.catalogoPorCodigo[value]?.nombre ?? value }}</span>
           </span>
-          <span v-else class="text-slate-400">Elige un favorito</span>
+          <span v-else class="text-slate-400 dark:text-slate-500">Elige un favorito</span>
         </template>
         <template #option="{ option }">
           <span class="flex items-center gap-2">

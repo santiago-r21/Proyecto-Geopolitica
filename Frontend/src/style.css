@@ -7,6 +7,13 @@
  */
 @layer theme, base, primevue, components, utilities;
 
+/*
+ * La variante `dark:` reacciona a la misma clase `.app-dark` que usa
+ * `darkModeSelector` de PrimeVue (ver main.js/stores/tema.js) — una sola
+ * fuente de verdad para ambos sistemas de estilos.
+ */
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
 html,
 body,
 #app {
@@ -21,4 +28,19 @@ body {
   -webkit-font-smoothing: antialiased;
   background-color: var(--color-slate-50);
   color: var(--color-slate-800);
+}
+
+.app-dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-200);
+}
+
+/* Tooltips de Leaflet (MapaDependencia.vue) no son Tailwind: estilo propio. */
+.app-dark .leaflet-tooltip {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-100);
+  border-color: var(--color-slate-700);
+}
+.app-dark .leaflet-tooltip::before {
+  border-top-color: var(--color-slate-800);
 }

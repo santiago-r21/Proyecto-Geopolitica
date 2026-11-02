@@ -21,7 +21,7 @@ const ayuda = computed(() =>
   <Card
     v-tooltip.top="ayuda"
     :pt="{
-      root: 'h-full rounded-xl border border-slate-200/80 bg-white shadow-xs transition-colors hover:border-slate-300',
+      root: 'h-full rounded-xl border border-slate-200/80 bg-white shadow-xs transition-colors hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700',
       body: 'flex h-full flex-col justify-between gap-3 p-4',
     }"
   >
@@ -33,16 +33,16 @@ const ayuda = computed(() =>
         >
           <i :class="categoria.icono" class="text-base" />
         </span>
-        <p class="flex items-center gap-1 text-xs font-medium text-slate-500">
+        <p class="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
           {{ categoria.nombre }}
           <span
             v-if="categoria.estimado"
-            class="rounded bg-slate-100 px-1 text-[9px] font-bold uppercase text-slate-400"
+            class="rounded bg-slate-100 px-1 text-[9px] font-bold uppercase text-slate-400 dark:bg-slate-800 dark:text-slate-500"
           >
             est.
           </span>
         </p>
-        <p class="mt-0.5 text-xl font-bold text-slate-900">{{ categoria.valor }}%</p>
+        <p class="mt-0.5 text-xl font-bold text-slate-900 dark:text-slate-50">{{ categoria.valor }}%</p>
       </div>
       <Tag
         :value="categoria.etiqueta"
