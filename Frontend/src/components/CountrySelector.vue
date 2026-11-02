@@ -62,6 +62,7 @@ function seleccionar({ value }) {
 
       <AutoComplete
         v-else
+        :key="codigo"
         v-model="paisBuscado"
         :suggestions="sugerencias"
         option-label="nombre"
