@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import AutoComplete from 'primevue/autocomplete'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import CountryFlag from './CountryFlag.vue'
@@ -13,6 +14,25 @@ const store = useDashboardStore()
 const paisesFavoritos = computed(() =>
   store.favoritos.map((id) => store.catalogoPorCodigo[id]).filter(Boolean),
 )
+
+// El AutoComplete trabaja con el objeto país completo (no con el código), así
+// que se mantiene sincronizado con `codigo` en ambos sentidos.
+const paisBuscado = ref(store.catalogoPorCodigo[codigo.value] ?? null)
+watch([codigo, () => store.catalogo], ([c]) => {
+  paisBuscado.value = store.catalogoPorCodigo[c] ?? paisBuscado.value
+})
+
+const sugerencias = ref([])
+function buscar({ query }) {
+  const q = query.trim().toLowerCase()
+  sugerencias.value = !q
+    ? store.catalogo
+    : store.catalogo.filter((p) => p.nombre.toLowerCase().includes(q) || p.iso2.includes(q))
+}
+
+function seleccionar({ value }) {
+  codigo.value = value.codigo
+}
 </script>
 
 <template>
@@ -30,34 +50,30 @@ const paisesFavoritos = computed(() =>
       />
     </div>
 
-    <Select
+    <AutoComplete
       v-else
-      v-model="codigo"
-      :options="store.catalogo"
+      v-model="paisBuscado"
+      :suggestions="sugerencias"
       option-label="nombre"
-      option-value="codigo"
-      filter
-      :filter-fields="['nombre', 'iso2']"
-      filter-placeholder="Buscar país..."
-      empty-filter-message="Ningún país coincide."
+      placeholder="Buscar país..."
       :loading="store.cargandoCatalogo"
+      :delay="150"
+      complete-on-focus
+      force-selection
+      empty-search-message="Ningún país coincide."
       aria-label="Busca un país"
-      class="w-full sm:w-56"
-      :pt="{ label: 'flex items-center gap-2 text-sm font-semibold text-slate-800' }"
+      class="w-full sm:w-44"
+      input-class="w-full text-sm font-semibold text-slate-800"
+      @complete="buscar"
+      @item-select="seleccionar"
     >
-      <template #value="{ value }">
-        <span class="flex items-center gap-2">
-          <CountryFlag :iso="store.catalogoPorCodigo[value]?.iso2" size="w-5 h-[0.9375rem]" />
-          <span>{{ store.catalogoPorCodigo[value]?.nombre ?? value }}</span>
-        </span>
-      </template>
       <template #option="{ option }">
         <span class="flex items-center gap-2">
           <CountryFlag :iso="option.iso2" size="w-5 h-[0.9375rem]" />
           <span>{{ option.nombre }}</span>
         </span>
       </template>
-    </Select>
+    </AutoComplete>
 
     <!-- Guardar/quitar de favoritos (toggle) -->
     <Button
@@ -79,7 +95,7 @@ const paisesFavoritos = computed(() =>
       placeholder="Sin favoritos"
       empty-message="Guarda un país para verlo aquí."
       aria-label="Tus países favoritos"
-      class="w-full sm:w-48"
+      class="w-full sm:w-40"
       :pt="{ label: 'flex items-center gap-2 text-sm font-semibold text-slate-800' }"
     >
       <template #value="{ value }">

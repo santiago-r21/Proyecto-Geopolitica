@@ -34,7 +34,6 @@ defineProps({
     </div>
 
     <div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-      <label class="text-xs font-medium text-slate-500">Selecciona un país:</label>
       <slot />
     </div>
   </div>
