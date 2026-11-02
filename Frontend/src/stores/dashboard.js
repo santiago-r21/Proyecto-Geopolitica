@@ -1,6 +1,8 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { obtenerDependencia, obtenerCatalogo } from '../services/api/client.js'
+import { cargarFavoritos, guardarFavoritos } from '../services/favoritos.js'
+import { FAVORITOS_POR_DEFECTO } from '../services/oec/reference.js'
 
 const ANIO = String(import.meta.env.VITE_OEC_YEAR ?? '2023')
 
@@ -96,6 +98,20 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return obtener(codigoPais.value, { forzar: true })
   }
 
+  // Favoritos del usuario (localStorage, sin backend — ver services/favoritos.js).
+  const favoritos = ref(cargarFavoritos(FAVORITOS_POR_DEFECTO))
+
+  function esFavorito(codigo) {
+    return favoritos.value.includes(codigo)
+  }
+
+  function alternarFavorito(codigo) {
+    favoritos.value = esFavorito(codigo)
+      ? favoritos.value.filter((c) => c !== codigo)
+      : [...favoritos.value, codigo]
+    guardarFavoritos(favoritos.value)
+  }
+
   cargarCatalogo()
 
   // Cambiar de país consulta sus datos automáticamente si no están en caché.
@@ -122,5 +138,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     catalogoError,
     catalogoPorCodigo,
     cargarCatalogo,
+    favoritos,
+    esFavorito,
+    alternarFavorito,
   }
 })

@@ -1,5 +1,5 @@
 /**
- * Accesos rápidos del selector (ids de la OEC). Nombre/ISO2 se resuelven desde
- * el catálogo completo (`GET /api/paises`, cacheado en el store), no aquí.
+ * Semilla de favoritos para la primera visita (localStorage vacío). Nombre/ISO2
+ * se resuelven desde el catálogo completo (`GET /api/paises`, cacheado en el store).
  */
-export const ACCESOS_RAPIDOS = ['sacol', 'saper', 'sachl', 'namex', 'saarg']
+export const FAVORITOS_POR_DEFECTO = ['sacol', 'saper', 'sachl', 'namex', 'saarg']
