@@ -58,8 +58,8 @@ public class DependenciaService {
 		Pais pais = buscarPais(codigo);
 
 		// Consultas obligatorias: potencias por exportación e importación.
-		List<JsonNode> filasExp = oecClient.fetchRecords(exportacionesPorSocio(codigo, anio));
-		List<JsonNode> filasImp = oecClient.fetchRecords(importacionesPorSocio(codigo, anio));
+		List<JsonNode> filasExp = oecClient.fetchRecords(oecClient.exportacionesPorSocio(codigo, anio));
+		List<JsonNode> filasImp = oecClient.fetchRecords(oecClient.importacionesPorSocio(codigo, anio));
 
 		// Consultas best-effort: desglose por sección HS (para categorías reales).
 		// Si fallan, el transformer cae a estimaciones derivadas del índice.
@@ -92,20 +92,6 @@ public class DependenciaService {
 
 	private String clave(String codigo, String anio) {
 		return codigo + ":" + anio;
-	}
-
-	/** 1. Exportaciones del país, desglosadas por país socio (importador). */
-	private String exportacionesPorSocio(String oecId, String anio) {
-		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Importer+Country"
-			+ "&include=Exporter+Country:%s;Year:%s&sort=Trade+Value.desc")
-			.formatted(propiedades.cube(), oecId, anio);
-	}
-
-	/** 2. Importaciones del país, desglosadas por país socio (exportador). */
-	private String importacionesPorSocio(String oecId, String anio) {
-		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Exporter+Country"
-			+ "&include=Importer+Country:%s;Year:%s&sort=Trade+Value.desc")
-			.formatted(propiedades.cube(), oecId, anio);
 	}
 
 	/** 3. Exportaciones del país por Sección HS × país socio. */

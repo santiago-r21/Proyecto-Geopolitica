@@ -89,6 +89,20 @@ public class OecClient {
 		return filas;
 	}
 
+	/** Exportaciones del país, desglosadas por país socio (importador). */
+	public String exportacionesPorSocio(String oecId, String anio) {
+		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Importer+Country"
+			+ "&include=Exporter+Country:%s;Year:%s&sort=Trade+Value.desc")
+			.formatted(propiedades.cube(), oecId, anio);
+	}
+
+	/** Importaciones del país, desglosadas por país socio (exportador). */
+	public String importacionesPorSocio(String oecId, String anio) {
+		return ("data.jsonrecords?cube=%s&measures=Trade+Value&drilldowns=Exporter+Country"
+			+ "&include=Importer+Country:%s;Year:%s&sort=Trade+Value.desc")
+			.formatted(propiedades.cube(), oecId, anio);
+	}
+
 	private void esperar(long ms) {
 		try {
 			Thread.sleep(ms);
