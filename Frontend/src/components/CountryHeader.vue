@@ -1,17 +1,31 @@
 <script setup>
+import Button from 'primevue/button'
 import CountryFlag from './CountryFlag.vue'
+import { useDashboardStore } from '../stores/dashboard.js'
 
-/** Cabecera del país: bandera, nombre, badge de monitoreo y selector (slot). */
+/** Cabecera del país: favorito, bandera, nombre, badge de monitoreo y selector (slot). */
 defineProps({
   nombre: { type: String, default: '' },
   iso: { type: String, default: null },
   subtitulo: { type: String, default: '' },
 })
+
+const store = useDashboardStore()
 </script>
 
 <template>
   <div class="flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+      <Button
+        :icon="store.esFavorito(store.codigoPais) ? 'pi pi-star-fill' : 'pi pi-star'"
+        :severity="store.esFavorito(store.codigoPais) ? 'warn' : 'secondary'"
+        text
+        rounded
+        class="shrink-0"
+        :aria-label="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+        v-tooltip.top="store.esFavorito(store.codigoPais) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+        @click="store.alternarFavorito(store.codigoPais)"
+      />
       <span
         class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 shadow-xs"
       >
