@@ -5,6 +5,7 @@ import Card from 'primevue/card'
 import Message from 'primevue/message'
 import { ptTarjeta } from '../utils/ui.js'
 import CardSkeleton from './states/CardSkeleton.vue'
+import { useTemaStore } from '../stores/tema.js'
 
 const props = defineProps({
   socios: { type: Array, default: null },
@@ -12,18 +13,22 @@ const props = defineProps({
   error: { type: Object, default: null },
 })
 
+const tema = useTemaStore()
+
 // Buckets de concentración de comercio con un socio real. Pensados para la
 // distribución de ~200 países (no las mismas cotas que los 4 bloques del
-// resumen, donde un solo bloque puede llegar a ~26-50%).
-const NIVELES = [
-  { max: 0, color: '#e2e8f0', etiqueta: 'Sin comercio registrado' },
+// resumen, donde un solo bloque puede llegar a ~26-50%). El nivel "sin
+// comercio" es el único que cambia con el tema: en oscuro un gris claro
+// quedaría como un bloque quemado sobre el mapa.
+const NIVELES = computed(() => [
+  { max: 0, color: tema.oscuro ? '#1e293b' : '#e2e8f0', etiqueta: 'Sin comercio registrado' },
   { max: 5, color: '#a7f3d0', etiqueta: 'Baja (<5%)' },
   { max: 15, color: '#fcd34d', etiqueta: 'Media (5-15%)' },
   { max: Infinity, color: '#f43f5e', etiqueta: 'Alta (>15%)' },
-]
+])
 
 function colorPorCuota(cuota) {
-  return NIVELES.find((n) => cuota <= n.max)?.color ?? NIVELES[0].color
+  return NIVELES.value.find((n) => cuota <= n.max)?.color ?? NIVELES.value[0].color
 }
 
 let geojsonMundial = null // se descarga una sola vez y se reutiliza entre países
@@ -45,7 +50,7 @@ function estiloFeature(feature) {
   return {
     fillColor: colorPorCuota(socio?.cuotaPorcentaje ?? 0),
     fillOpacity: 0.85,
-    color: '#ffffff',
+    color: tema.oscuro ? '#1e293b' : '#ffffff',
     weight: 0.75,
   }
 }
@@ -101,14 +106,15 @@ onUnmounted(() => {
 })
 
 watch(() => props.socios, pintarCapa)
+watch(() => tema.oscuro, pintarCapa)
 </script>
 
 <template>
   <Card :pt="ptTarjeta">
     <template #content>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <h3 class="text-base font-bold text-slate-900">Mapa de socios comerciales</h3>
-        <div class="flex items-center gap-3 text-[11px] font-medium text-slate-500">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">Mapa de socios comerciales</h3>
+        <div class="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           <span v-for="n in NIVELES" :key="n.etiqueta" class="flex items-center gap-1.5">
             <span class="h-2.5 w-2.5 rounded-sm" :style="{ backgroundColor: n.color }" />
             {{ n.etiqueta }}
@@ -117,12 +123,12 @@ watch(() => props.socios, pintarCapa)
       </div>
 
       <div class="relative">
-        <div ref="contenedor" class="h-[26rem] w-full overflow-hidden rounded-xl bg-slate-50" />
+        <div ref="contenedor" class="h-[26rem] w-full overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-950" />
 
         <div v-if="cargando && !socios" class="absolute inset-0">
           <CardSkeleton variante="mapa" />
         </div>
-        <div v-else-if="error && !socios" class="absolute inset-0 flex items-center bg-white/90 p-4">
+        <div v-else-if="error && !socios" class="absolute inset-0 flex items-center bg-white/90 p-4 dark:bg-slate-900/90">
           <Message severity="error" :closable="false">
             No se pudieron cargar los socios comerciales: {{ error.message }}
           </Message>

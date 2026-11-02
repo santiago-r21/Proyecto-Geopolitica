@@ -9,8 +9,8 @@ defineProps({
 <template>
   <section>
     <div class="mb-4 flex items-center justify-between">
-      <h3 class="text-base font-bold text-slate-900">Dependencia por categoría</h3>
-      <span class="text-xs font-medium text-slate-500">
+      <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">Dependencia por categoría</h3>
+      <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
         {{ categorias.length }} áreas críticas evaluadas
       </span>
     </div>

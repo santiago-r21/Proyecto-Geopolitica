@@ -58,7 +58,7 @@ const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.val
 </script>
 
 <template>
-  <div class="h-screen overflow-y-auto overflow-x-hidden bg-slate-50/60">
+  <div class="h-screen overflow-y-auto overflow-x-hidden bg-slate-50/60 dark:bg-slate-950">
     <CountryTabs v-model="pestanaActiva">
       <!-- Cabecera sticky: país + selector -->
       <template #header>

@@ -20,8 +20,9 @@ const pestanas = [
 
 const CLASE_BASE =
   'relative -mb-px cursor-pointer border-0 border-b-2 bg-transparent px-1 py-3.5 text-sm transition-colors'
-const CLASE_ACTIVA = 'border-sky-600 font-bold text-sky-600'
-const CLASE_INACTIVA = 'border-transparent font-medium text-slate-500 hover:text-slate-700'
+const CLASE_ACTIVA = 'border-sky-600 font-bold text-sky-600 dark:border-sky-400 dark:text-sky-400'
+const CLASE_INACTIVA =
+  'border-transparent font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
 
 // pt como función: PrimeVue expone `context.active` para cada Tab.
 const ptPestana = {
@@ -34,7 +35,7 @@ const ptPestana = {
 <template>
   <Tabs v-model:value="activa" :pt="{ root: 'flex min-h-full flex-col' }">
     <div
-      class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8"
+      class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900/95"
     >
       <slot name="header" />
 

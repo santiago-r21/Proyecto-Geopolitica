@@ -5,12 +5,17 @@ import ChartComponent from 'primevue/chart'
 import Message from 'primevue/message'
 import { ptTarjeta } from '../utils/ui.js'
 import CardSkeleton from './states/CardSkeleton.vue'
+import { useTemaStore } from '../stores/tema.js'
 
 const props = defineProps({
   comparacion: { type: Array, default: null },
   cargando: { type: Boolean, default: false },
   error: { type: Object, default: null },
 })
+
+const tema = useTemaStore()
+const colorTexto = computed(() => (tema.oscuro ? '#cbd5e1' : '#475569'))
+const colorGrilla = computed(() => (tema.oscuro ? '#334155' : '#e2e8f0'))
 
 // Colores por "acento" de categoría, mismas familias que utils/ui.js (clasesAcento).
 const COLOR_ACENTO = {
@@ -44,15 +49,18 @@ const datosCategorias = computed(() => {
   }
 })
 
-const opcionesCategorias = {
+const opcionesCategorias = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  scales: { y: { min: 0, max: 100, ticks: { stepSize: 20 } } },
+  scales: {
+    x: { ticks: { color: colorTexto.value }, grid: { color: colorGrilla.value } },
+    y: { min: 0, max: 100, ticks: { stepSize: 20, color: colorTexto.value }, grid: { color: colorGrilla.value } },
+  },
   plugins: {
-    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: colorTexto.value } },
     tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } },
   },
-}
+}))
 
 const datosSocios = computed(() => {
   const primero = props.comparacion?.[0]
@@ -68,15 +76,18 @@ const datosSocios = computed(() => {
   }
 })
 
-const opcionesSocios = {
+const opcionesSocios = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  scales: { y: { min: 0, max: 100, ticks: { stepSize: 20 } } },
+  scales: {
+    x: { ticks: { color: colorTexto.value }, grid: { color: colorGrilla.value } },
+    y: { min: 0, max: 100, ticks: { stepSize: 20, color: colorTexto.value }, grid: { color: colorGrilla.value } },
+  },
   plugins: {
-    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: colorTexto.value } },
     tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } },
   },
-}
+}))
 </script>
 
 <template>
@@ -89,8 +100,8 @@ const opcionesSocios = {
   <div v-else class="space-y-6">
     <Card :pt="ptTarjeta">
       <template #content>
-        <h3 class="text-base font-bold text-slate-900">Dependencia por categoría</h3>
-        <p class="mt-0.5 text-xs text-slate-500">Evolución 2022-2024 por área (comercio, tecnología, energía...)</p>
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">Dependencia por categoría</h3>
+        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Evolución 2022-2024 por área (comercio, tecnología, energía...)</p>
         <div class="mt-4 h-64">
           <ChartComponent type="line" :data="datosCategorias" :options="opcionesCategorias" class="h-full w-full" />
         </div>
@@ -99,8 +110,8 @@ const opcionesSocios = {
 
     <Card :pt="ptTarjeta">
       <template #content>
-        <h3 class="text-base font-bold text-slate-900">Evolución por socio</h3>
-        <p class="mt-0.5 text-xs text-slate-500">Participación de cada bloque en el comercio total</p>
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">Evolución por socio</h3>
+        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Participación de cada bloque en el comercio total</p>
         <div class="mt-4 h-64">
           <ChartComponent type="bar" :data="datosSocios" :options="opcionesSocios" class="h-full w-full" />
         </div>

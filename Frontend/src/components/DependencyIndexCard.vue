@@ -4,6 +4,7 @@ import Card from 'primevue/card'
 import Tag from 'primevue/tag'
 import Chart from 'primevue/chart'
 import { ptTarjeta } from '../utils/ui.js'
+import { useTemaStore } from '../stores/tema.js'
 
 const props = defineProps({
   indice: { type: Number, required: true },
@@ -12,6 +13,8 @@ const props = defineProps({
   pesos: { type: Object, default: () => ({ economico: 50, estrategico: 50 }) },
 })
 
+const tema = useTemaStore()
+
 const datosGrafico = computed(() => ({
   labels: props.socios.map((s) => s.nombre),
   datasets: [
@@ -19,14 +22,16 @@ const datosGrafico = computed(() => ({
       data: props.socios.map((s) => s.porcentaje),
       backgroundColor: props.socios.map((s) => s.color),
       hoverBackgroundColor: props.socios.map((s) => s.color),
-      borderColor: '#ffffff',
+      // Mismo color que el fondo de la tarjeta (ptTarjeta): el borde separa
+      // segmentos sin quedar "quemado" en blanco sobre fondo oscuro.
+      borderColor: tema.oscuro ? '#0f172a' : '#ffffff',
       borderWidth: 2,
       hoverOffset: 6,
     },
   ],
 }))
 
-const opcionesGrafico = {
+const opcionesGrafico = computed(() => ({
   cutout: '70%',
   responsive: true,
   maintainAspectRatio: false,
@@ -36,7 +41,7 @@ const opcionesGrafico = {
       callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%` },
     },
   },
-}
+}))
 </script>
 
 <template>
@@ -44,8 +49,8 @@ const opcionesGrafico = {
     <template #content>
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="min-w-0">
-          <h3 class="text-base font-bold text-slate-900">Índice dependencia internacional</h3>
-          <p class="mt-0.5 text-xs text-slate-500">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">Índice dependencia internacional</h3>
+          <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             Nivel agregado de exposición a potencias externas
           </p>
         </div>
@@ -68,9 +73,9 @@ const opcionesGrafico = {
           <div
             class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
           >
-            <span class="text-4xl font-extrabold tracking-tight text-slate-900">{{ indice }}</span>
+            <span class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">{{ indice }}</span>
             <span
-              class="mt-0.5 text-center text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400"
+              class="mt-0.5 text-center text-[10px] font-semibold uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500"
             >
               Índice total<br />(de 100)
             </span>
@@ -81,22 +86,22 @@ const opcionesGrafico = {
           <li
             v-for="socio in socios"
             :key="socio.clave"
-            class="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50"
+            class="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60"
           >
             <span class="flex items-center gap-2.5">
               <span
                 class="h-3 w-3 shrink-0 rounded-full"
                 :style="{ backgroundColor: socio.color }"
               />
-              <span class="text-xs font-semibold text-slate-700">{{ socio.nombre }}</span>
+              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ socio.nombre }}</span>
             </span>
-            <span class="text-xs font-bold text-slate-900">{{ socio.porcentaje }}%</span>
+            <span class="text-xs font-bold text-slate-900 dark:text-slate-50">{{ socio.porcentaje }}%</span>
           </li>
         </ul>
       </div>
 
       <div
-        class="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500"
+        class="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"
       >
         <i class="pi pi-info-circle shrink-0 text-sky-600" />
         <p>
