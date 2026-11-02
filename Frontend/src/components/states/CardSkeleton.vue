@@ -7,6 +7,7 @@ import Skeleton from 'primevue/skeleton'
  *  - lista   : tarjeta de "Principales Socios"
  *  - rejilla : rejilla de categorías
  *  - detalle : "Detalle por Socio Principal"
+ *  - mapa    : mapa interactivo de socios
  */
 defineProps({
   variante: { type: String, default: 'indice' },
@@ -14,8 +15,14 @@ defineProps({
 </script>
 
 <template>
+  <div v-if="variante === 'mapa'" class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+    <Skeleton width="12rem" height="1rem" class="mb-2" />
+    <Skeleton width="18rem" height="0.75rem" class="mb-6" />
+    <Skeleton height="26rem" />
+  </div>
+
   <div
-    v-if="variante === 'rejilla'"
+    v-else-if="variante === 'rejilla'"
     class="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6"
   >
     <div

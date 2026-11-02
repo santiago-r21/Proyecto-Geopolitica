@@ -13,6 +13,7 @@ import DependencyCategories from '../components/DependencyCategories.vue'
 import PartnerDetail from '../components/PartnerDetail.vue'
 import CardSkeleton from '../components/states/CardSkeleton.vue'
 import ErrorState from '../components/states/ErrorState.vue'
+import MapaDependencia from '../components/MapaDependencia.vue'
 import { useDashboardStore } from '../stores/dashboard.js'
 
 const store = useDashboardStore()
@@ -22,6 +23,9 @@ const {
   datosActuales: datos,
   cargandoActual: cargando,
   errorActual: error,
+  sociosActuales,
+  cargandoSociosActual,
+  errorSociosActual,
 } = storeToRefs(store)
 const toast = useToast()
 
@@ -112,6 +116,17 @@ const isoPais = () => datos.value?.iso ?? store.catalogoPorCodigo[codigoPais.val
               derivadas de la concentración comercial.
             </p>
           </div>
+        </div>
+      </template>
+
+      <!-- MAPA -->
+      <template #mapa>
+        <div class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+          <MapaDependencia
+            :socios="sociosActuales"
+            :cargando="cargandoSociosActual"
+            :error="errorSociosActual"
+          />
         </div>
       </template>
 
