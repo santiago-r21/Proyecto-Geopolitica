@@ -35,6 +35,13 @@ body {
   color: var(--color-slate-200);
 }
 
+/* El tema Aura limita los tooltips de PrimeVue a max-width: 12.5rem. Esta
+   clase se usa en tooltips con texto largo (ej. aclaración del índice de
+   dependencia) donde ese ancho queda demasiado angosto. */
+.tooltip-ancho {
+  max-width: 24rem !important;
+}
+
 /* Tooltips de Leaflet (MapaDependencia.vue) no son Tailwind: estilo propio. */
 .app-dark .leaflet-tooltip {
   background-color: var(--color-slate-800);
