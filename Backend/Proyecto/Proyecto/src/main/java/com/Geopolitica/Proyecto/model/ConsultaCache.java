@@ -1,4 +1,4 @@
-package com.Geopolitica.Proyecto.cache;
+package com.Geopolitica.Proyecto.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

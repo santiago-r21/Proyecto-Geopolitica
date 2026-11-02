@@ -1,4 +1,4 @@
-package com.Geopolitica.Proyecto.oec;
+package com.Geopolitica.Proyecto.client;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;

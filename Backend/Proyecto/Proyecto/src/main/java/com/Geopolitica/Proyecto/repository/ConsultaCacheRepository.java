@@ -1,5 +1,6 @@
-package com.Geopolitica.Proyecto.cache;
+package com.Geopolitica.Proyecto.repository;
 
+import com.Geopolitica.Proyecto.model.ConsultaCache;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

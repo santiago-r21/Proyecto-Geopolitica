@@ -1,5 +1,7 @@
-package com.Geopolitica.Proyecto.pais;
+package com.Geopolitica.Proyecto.controller;
 
+import com.Geopolitica.Proyecto.dto.Pais;
+import com.Geopolitica.Proyecto.service.PaisService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
